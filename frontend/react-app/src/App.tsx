@@ -1,43 +1,168 @@
+import { useEffect, useMemo, useState } from 'react'
+import { registerForDemo, fetchQuestion, fetchQuestions, runCode } from './api/coding'
+import { EditorPanel } from './components/coding/EditorPanel'
+import { ExecutionPanel } from './components/coding/ExecutionPanel'
+import { QuestionPanel } from './components/coding/QuestionPanel'
+import { QuestionSidebar } from './components/coding/QuestionSidebar'
+import { useAuthStore } from './store/authStore'
+import type { QuestionDetail, QuestionListItem, SubmitCodeResponse, SupportedLanguage } from './types/api'
+
+const starterCode: Record<SupportedLanguage, string> = {
+  cpp: '#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n  // write solution\n  return 0;\n}\n',
+  python: 'def solve():\n    # write solution\n    pass\n\nif __name__ == "__main__":\n    solve()\n',
+  java: 'import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // write solution\n    }\n}\n',
+  javascript:
+    "function solve(input) {\n  // write solution\n  return '';\n}\n\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8');\nprocess.stdout.write(String(solve(input)));\n",
+}
+
 function App() {
+  const { token, setAuth, logout, user } = useAuthStore()
+
+  const [questions, setQuestions] = useState<QuestionListItem[]>([])
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null)
+  const [questionDetail, setQuestionDetail] = useState<QuestionDetail | null>(null)
+
+  const [language, setLanguage] = useState<SupportedLanguage>('cpp')
+  const [code, setCode] = useState(starterCode.cpp)
+  const [result, setResult] = useState<SubmitCodeResponse | null>(null)
+  const [running, setRunning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const selectedQuestion = useMemo(
+    () => questions.find((q) => q.id === selectedQuestionId) ?? null,
+    [questions, selectedQuestionId],
+  )
+
+  useEffect(() => {
+    if (!token) return
+
+    setLoading(true)
+    fetchQuestions()
+      .then((items) => {
+        setQuestions(items)
+        if (items.length > 0) {
+          setSelectedQuestionId(items[0].id)
+        }
+      })
+      .catch(() => setError('Failed to load questions. Ensure backend is running.'))
+      .finally(() => setLoading(false))
+  }, [token])
+
+  useEffect(() => {
+    if (!selectedQuestionId || !token) return
+
+    fetchQuestion(selectedQuestionId)
+      .then((data) => {
+        setQuestionDetail(data)
+        setResult(null)
+      })
+      .catch(() => setError('Failed to load question details.'))
+  }, [selectedQuestionId, token])
+
+  const handleDemoLogin = async () => {
+    setError(null)
+    try {
+      const data = await registerForDemo()
+      setAuth(data.token, data.user)
+    } catch {
+      setError('Demo login failed. Verify API and DB connectivity.')
+    }
+  }
+
+  const handleLanguageChange = (next: SupportedLanguage) => {
+    setLanguage(next)
+    setCode(starterCode[next])
+  }
+
+  const handleRunCode = async () => {
+    if (!selectedQuestion) {
+      setError('Select a question first.')
+      return
+    }
+
+    setRunning(true)
+    setError(null)
+
+    try {
+      const response = await runCode({
+        questionId: selectedQuestion.id,
+        language,
+        code,
+      })
+      setResult(response)
+    } catch {
+      setError('Code execution failed. Check Judge0 configuration in backend .env.')
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  if (!token) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
+        <section className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/70 p-8">
+          <p className="inline-flex rounded-full border border-emerald-400/50 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
+            Phase 2 MVP
+          </p>
+          <h1 className="mt-4 text-4xl font-bold text-white">AI OA Practice</h1>
+          <p className="mt-3 text-sm text-slate-300">
+            Coding workspace is ready. Use demo login to access question list and Monaco execution flow.
+          </p>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            className="mt-6 rounded-lg border border-emerald-500 bg-emerald-500/20 px-5 py-2 font-semibold text-emerald-200 hover:bg-emerald-500/30"
+          >
+            Continue as Demo User
+          </button>
+          {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-5xl px-6 py-16">
-        <span className="inline-flex rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
-          Phase 0 Scaffold
-        </span>
-
-        <h1 className="mt-6 text-4xl font-bold leading-tight text-white md:text-6xl">
-          AI OA Practice
-        </h1>
-
-        <p className="mt-6 max-w-2xl text-base text-slate-300 md:text-lg">
-          Production-ready open-source platform for coding interview simulation,
-          online assessments, and AI-driven system design feedback.
-        </p>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          <section className="rounded-xl border border-slate-700 bg-slate-900/60 p-5">
-            <h2 className="text-lg font-semibold text-white">Frontend</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              React + TypeScript + Tailwind + Monaco + Zustand
+      <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-8">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">AI OA Practice Workspace</h1>
+            <p className="text-sm text-slate-300">
+              Signed in as {user?.name} ({user?.email})
             </p>
-          </section>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700"
+          >
+            Logout
+          </button>
+        </header>
 
-          <section className="rounded-xl border border-slate-700 bg-slate-900/60 p-5">
-            <h2 className="text-lg font-semibold text-white">Backend</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Node.js + Express + MongoDB + Gemini + Judge0 + Socket.io
-            </p>
-          </section>
-        </div>
+        {loading ? <p className="mb-4 text-sm text-slate-400">Loading questions...</p> : null}
+        {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
 
-        <div className="mt-10 rounded-xl border border-slate-700 bg-slate-900/60 p-5">
-          <h3 className="text-base font-semibold text-white">Next Milestones</h3>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
-            <li>Implement auth and session lifecycle APIs.</li>
-            <li>Add coding workspace with Monaco and Judge0 integration.</li>
-            <li>Build AI interviewer and analytics dashboard modules.</li>
-          </ul>
+        <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+          <QuestionSidebar
+            questions={questions}
+            selectedId={selectedQuestionId}
+            onSelect={setSelectedQuestionId}
+          />
+
+          <div className="space-y-4">
+            <QuestionPanel question={questionDetail} />
+            <EditorPanel
+              code={code}
+              language={language}
+              onCodeChange={setCode}
+              onLanguageChange={handleLanguageChange}
+              onRun={handleRunCode}
+              running={running}
+            />
+            <ExecutionPanel result={result} error={error} />
+          </div>
         </div>
       </div>
     </main>

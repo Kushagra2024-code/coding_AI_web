@@ -9,3 +9,7 @@ export async function connectToDatabase(uri?: string): Promise<void> {
   await mongoose.connect(uri)
   console.info('MongoDB connected')
 }
+
+export function isDatabaseReady(): boolean {
+  return mongoose.connection.readyState === 1
+}

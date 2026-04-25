@@ -82,15 +82,37 @@ Request body:
 }
 ```
 
+## Coding Endpoints (Phase 2)
+
+### `GET /questions`
+Returns coding question list for the authenticated user.
+
+### `GET /questions/:questionId`
+Returns a question detail payload with visible tests.
+
+### `POST /submit-code`
+Executes code with Judge0 and evaluates against visible + hidden tests.
+
+Request body:
+
+```json
+{
+  "questionId": "fallback-two-sum",
+  "language": "cpp",
+  "code": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){return 0;}"
+}
+```
+
+Auth header:
+
+`Authorization: Bearer <token>`
+
 ## Core Endpoints (Planned)
 
 These routes are scaffolded and currently return `501 Not Implemented` until feature implementation.
 
 ### `POST /generate-question`
 Generate AI coding questions with title, difficulty, tags, constraints, and hidden test cases.
-
-### `POST /submit-code`
-Submit source code and language, execute via Judge0, and evaluate against tests.
 
 ### `POST /evaluate-design`
 Evaluate system design diagram and architecture text using Gemini.

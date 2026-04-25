@@ -81,9 +81,13 @@ Phase 1 auth/session endpoints:
 - `POST /api/sessions/start` (Bearer token required)
 - `POST /api/sessions/end` (Bearer token required)
 
+Phase 2 coding workflow endpoints:
+- `GET /api/questions` (Bearer token required)
+- `GET /api/questions/:questionId` (Bearer token required)
+- `POST /api/submit-code` (Bearer token required)
+
 Planned core endpoints (currently scaffolded with `501 Not Implemented`):
 - `POST /api/generate-question`
-- `POST /api/submit-code`
 - `POST /api/evaluate-design`
 - `POST /api/detect-cheating`
 - `POST /api/generate-feedback`

@@ -1,6 +1,26 @@
 import { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import { z } from 'zod'
+import { isDatabaseReady } from '../config/db'
 import { SessionEntity, SessionType } from '../models/Session'
+
+interface InMemorySession {
+  id: string
+  userId: string
+  type: SessionType
+  startTime: string
+  endTime?: string
+  scoreBreakdown?: {
+    correctness: number
+    efficiency: number
+    codeQuality: number
+    designQuality: number
+  }
+  overallScore?: number
+  updatedAt: string
+}
+
+const inMemorySessions = new Map<string, InMemorySession>()
 
 const startSessionSchema = z.object({
   type: z.enum(['coding', 'oa', 'system_design', 'mixed']),
@@ -31,6 +51,31 @@ export async function startSession(req: Request, res: Response): Promise<void> {
     return
   }
 
+  if (!isDatabaseReady()) {
+    const now = new Date().toISOString()
+    const session: InMemorySession = {
+      id: `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+      userId: req.user.id,
+      type: parsed.data.type as SessionType,
+      startTime: now,
+      updatedAt: now,
+    }
+
+    inMemorySessions.set(session.id, session)
+
+    res.status(201).json({
+      session: {
+        id: session.id,
+        userId: session.userId,
+        type: session.type,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        overallScore: session.overallScore,
+      },
+    })
+    return
+  }
+
   const session = await SessionEntity.create({
     userId: req.user.id,
     type: parsed.data.type as SessionType,
@@ -58,6 +103,44 @@ export async function endSession(req: Request, res: Response): Promise<void> {
   const parsed = endSessionSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ message: 'Invalid payload', errors: parsed.error.flatten().fieldErrors })
+    return
+  }
+
+  if (!isDatabaseReady()) {
+    const session = inMemorySessions.get(parsed.data.sessionId)
+    if (!session || session.userId !== req.user.id) {
+      res.status(404).json({ message: 'Session not found' })
+      return
+    }
+
+    session.endTime = new Date().toISOString()
+    session.updatedAt = session.endTime
+
+    if (parsed.data.scoreBreakdown) {
+      session.scoreBreakdown = parsed.data.scoreBreakdown
+    }
+
+    if (typeof parsed.data.overallScore === 'number') {
+      session.overallScore = parsed.data.overallScore
+    }
+
+    res.status(200).json({
+      session: {
+        id: session.id,
+        userId: session.userId,
+        type: session.type,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        scoreBreakdown: session.scoreBreakdown,
+        overallScore: session.overallScore,
+        updatedAt: session.updatedAt,
+      },
+    })
+    return
+  }
+
+  if (!mongoose.isValidObjectId(parsed.data.sessionId)) {
+    res.status(400).json({ message: 'Invalid sessionId' })
     return
   }
 
