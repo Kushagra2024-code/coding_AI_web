@@ -149,6 +149,32 @@ Request body:
 }
 ```
 
+## System Design Endpoints (Phase 4)
+
+### `GET /design/questions`
+Returns curated system design practice prompts.
+
+### `POST /evaluate-design`
+Evaluates architecture description and drawboard JSON using Gemini.
+
+Request body:
+
+```json
+{
+  "questionTitle": "Design Twitter",
+  "architectureText": "I will use fanout-on-write for active users and fanout-on-read for long tail.",
+  "diagram": {
+    "nodes": [
+      { "id": "n1", "type": "rectangle", "x": 40, "y": 40, "width": 150, "height": 70, "label": "API Gateway" },
+      { "id": "n2", "type": "database", "x": 260, "y": 40, "width": 150, "height": 70, "label": "Feed Store" }
+    ],
+    "edges": [
+      { "id": "e1", "from": "n1", "to": "n2", "label": "writes" }
+    ]
+  }
+}
+```
+
 ## Core Endpoints (Planned)
 
 These routes are scaffolded and currently return `501 Not Implemented` until feature implementation.

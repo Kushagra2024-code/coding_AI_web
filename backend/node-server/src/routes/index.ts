@@ -6,6 +6,7 @@ import { sessionRouter } from './session.routes'
 import { questionRouter } from './question.routes'
 import { submissionRouter } from './submission.routes'
 import { aiRouter } from './ai.routes'
+import { designRouter } from './design.routes'
 
 export const apiRouter = Router()
 
@@ -16,3 +17,4 @@ apiRouter.use('/', sessionRouter)
 apiRouter.use('/', questionRouter)
 apiRouter.use('/', submissionRouter)
 apiRouter.use('/', aiRouter)
+apiRouter.use('/', designRouter)

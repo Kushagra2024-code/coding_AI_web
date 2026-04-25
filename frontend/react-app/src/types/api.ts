@@ -106,3 +106,55 @@ export interface InterviewTurnResponse {
     focusArea: string
   }
 }
+
+export interface DesignQuestion {
+  id: string
+  title: string
+  description: string
+  focusAreas: string[]
+}
+
+export type DiagramNodeType = 'rectangle' | 'database' | 'text'
+
+export interface DiagramNode {
+  id: string
+  type: DiagramNodeType
+  x: number
+  y: number
+  width: number
+  height: number
+  label: string
+}
+
+export interface DiagramEdge {
+  id: string
+  from: string
+  to: string
+  label?: string
+}
+
+export interface DesignEvaluationPayload {
+  sessionId?: string
+  questionTitle: string
+  architectureText: string
+  diagram: {
+    nodes: DiagramNode[]
+    edges: DiagramEdge[]
+  }
+}
+
+export interface DesignEvaluation {
+  score: number
+  scalability: number
+  faultTolerance: number
+  databaseChoice: number
+  cachingStrategy: number
+  microservicesArchitecture: number
+  missingComponents: string[]
+  improvements: string[]
+  summary: string
+}
+
+export interface EvaluateDesignResponse {
+  evaluation: DesignEvaluation
+}

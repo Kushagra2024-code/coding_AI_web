@@ -6,6 +6,9 @@ import type {
   GenerateFeedbackResponse,
   InterviewTurnPayload,
   InterviewTurnResponse,
+  DesignEvaluationPayload,
+  EvaluateDesignResponse,
+  DesignQuestion,
   QuestionDetail,
   QuestionListItem,
   SubmitCodePayload,
@@ -57,5 +60,15 @@ export async function generateAiFeedback(payload: GenerateFeedbackPayload): Prom
 
 export async function askInterviewer(payload: InterviewTurnPayload): Promise<InterviewTurnResponse> {
   const { data } = await api.post<InterviewTurnResponse>('/interview/message', payload)
+  return data
+}
+
+export async function fetchDesignQuestions(): Promise<DesignQuestion[]> {
+  const { data } = await api.get<{ questions: DesignQuestion[] }>('/design/questions')
+  return data.questions
+}
+
+export async function evaluateSystemDesign(payload: DesignEvaluationPayload): Promise<EvaluateDesignResponse> {
+  const { data } = await api.post<EvaluateDesignResponse>('/evaluate-design', payload)
   return data
 }

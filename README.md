@@ -92,8 +92,11 @@ Phase 3 AI layer endpoints:
 - `POST /api/generate-feedback` (Bearer token required)
 - `POST /api/interview/message` (Bearer token required)
 
+Phase 4 system design endpoints:
+- `GET /api/design/questions` (Bearer token required)
+- `POST /api/evaluate-design` (Bearer token required)
+
 Planned core endpoints (currently scaffolded with `501 Not Implemented`):
-- `POST /api/evaluate-design`
 - `POST /api/detect-cheating`
 - `GET /api/session-score`
 - `GET /api/analytics`

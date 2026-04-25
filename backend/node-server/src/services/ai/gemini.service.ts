@@ -28,6 +28,18 @@ export interface InterviewResponse {
   focusArea: string
 }
 
+export interface DesignEvaluation {
+  score: number
+  scalability: number
+  faultTolerance: number
+  databaseChoice: number
+  cachingStrategy: number
+  microservicesArchitecture: number
+  missingComponents: string[]
+  improvements: string[]
+  summary: string
+}
+
 function extractJsonObject(text: string): string {
   const fenced = text.match(/```json\s*([\s\S]*?)```/i)
   if (fenced?.[1]) {
@@ -186,4 +198,60 @@ Rules:
 - no markdown, no extra text.`
 
   return generateJson<InterviewResponse>(prompt)
+}
+
+export async function evaluateSystemDesignWithAi(params: {
+  questionTitle: string
+  architectureText: string
+  diagram: {
+    nodes: Array<{ id: string; type: 'rectangle' | 'database' | 'text'; label: string }>
+    edges: Array<{ id: string; from: string; to: string; label?: string }>
+  }
+}): Promise<DesignEvaluation> {
+  if (!env.GEMINI_API_KEY) {
+    return {
+      score: 72,
+      scalability: 74,
+      faultTolerance: 68,
+      databaseChoice: 76,
+      cachingStrategy: 69,
+      microservicesArchitecture: 73,
+      missingComponents: ['Rate limiting layer', 'Disaster recovery strategy'],
+      improvements: [
+        'Add explicit cache invalidation strategy and TTL policy.',
+        'Introduce queue-based decoupling for write-heavy components.',
+        'Define failover strategy for stateful services and datastore replicas.',
+      ],
+      summary: 'Strong baseline architecture but needs deeper reliability and cache coherence planning.',
+    }
+  }
+
+  const prompt = `You are a principal system design interviewer.
+Return only valid JSON with this exact shape:
+{
+  "score": number,
+  "scalability": number,
+  "faultTolerance": number,
+  "databaseChoice": number,
+  "cachingStrategy": number,
+  "microservicesArchitecture": number,
+  "missingComponents": string[],
+  "improvements": string[],
+  "summary": string
+}
+
+Question: ${params.questionTitle}
+Architecture Notes:
+${params.architectureText}
+
+Diagram nodes: ${params.diagram.nodes.map((n) => `${n.type}:${n.label}`).join(', ')}
+Diagram edges: ${params.diagram.edges.map((e) => `${e.from}->${e.to}${e.label ? `(${e.label})` : ''}`).join(', ')}
+
+Rules:
+- All numeric scores must be integers in range [0,100].
+- Provide 2-6 missing components.
+- Provide 3-6 actionable improvements.
+- No markdown and no text outside JSON.`
+
+  return generateJson<DesignEvaluation>(prompt)
 }
