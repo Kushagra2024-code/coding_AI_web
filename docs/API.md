@@ -17,6 +17,71 @@ Example response:
 }
 ```
 
+## Auth Endpoints
+
+### `POST /auth/register`
+Creates a user account and returns a JWT access token.
+
+Request body:
+
+```json
+{
+  "name": "Kushagra",
+  "email": "kushagra@example.com",
+  "password": "StrongPass123"
+}
+```
+
+### `POST /auth/login`
+Authenticates a user and returns a JWT access token.
+
+Request body:
+
+```json
+{
+  "email": "kushagra@example.com",
+  "password": "StrongPass123"
+}
+```
+
+### `GET /me`
+Returns current user profile.
+
+Auth header:
+
+`Authorization: Bearer <token>`
+
+## Session Endpoints
+
+### `POST /sessions/start`
+Starts a practice session.
+
+Request body:
+
+```json
+{
+  "type": "coding"
+}
+```
+
+### `POST /sessions/end`
+Ends a practice session and optionally stores score breakdown.
+
+Request body:
+
+```json
+{
+  "sessionId": "6623c0000000000000000000",
+  "scoreBreakdown": {
+    "correctness": 80,
+    "efficiency": 70,
+    "codeQuality": 75,
+    "designQuality": 60
+  },
+  "overallScore": 72
+}
+```
+
 ## Core Endpoints (Planned)
 
 These routes are scaffolded and currently return `501 Not Implemented` until feature implementation.

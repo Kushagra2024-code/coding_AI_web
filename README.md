@@ -59,6 +59,7 @@ Backend (`backend/node-server/.env`):
 - `PORT`
 - `MONGODB_URI`
 - `JWT_SECRET`
+- `JWT_EXPIRES_IN`
 - `FRONTEND_URL`
 - `GEMINI_API_KEY`
 - `JUDGE0_API_URL`
@@ -72,6 +73,13 @@ Frontend (`frontend/react-app/.env`):
 
 Health endpoint:
 - `GET /api/health`
+
+Phase 1 auth/session endpoints:
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/me` (Bearer token required)
+- `POST /api/sessions/start` (Bearer token required)
+- `POST /api/sessions/end` (Bearer token required)
 
 Planned core endpoints (currently scaffolded with `501 Not Implemented`):
 - `POST /api/generate-question`

@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   MONGODB_URI: z.string().url().optional(),
   JWT_SECRET: z.string().min(12).default('dev-only-secret-change-me'),
+  JWT_EXPIRES_IN: z.string().default('1d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   GEMINI_API_KEY: z.string().optional(),
   JUDGE0_API_URL: z.string().url().optional(),
