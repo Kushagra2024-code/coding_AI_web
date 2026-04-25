@@ -107,21 +107,57 @@ Auth header:
 
 `Authorization: Bearer <token>`
 
+## AI Endpoints (Phase 3)
+
+### `POST /generate-question`
+Generates a new AI coding question and returns it.
+
+Request body:
+
+```json
+{
+  "difficulty": "medium",
+  "tags": ["array", "two-pointers"]
+}
+```
+
+### `POST /generate-feedback`
+Returns AI mentor feedback for a submission.
+
+Request body:
+
+```json
+{
+  "problemTitle": "Two Sum",
+  "code": "def solve():\n    pass",
+  "language": "python",
+  "correctnessScore": 70,
+  "efficiencyScore": 80
+}
+```
+
+### `POST /interview/message`
+Simulates interviewer dialogue with follow-up probing.
+
+Request body:
+
+```json
+{
+  "problemTitle": "Two Sum",
+  "problemSummary": "Find two indices adding to target.",
+  "candidateMessage": "I plan to use a hash map for O(n) lookup."
+}
+```
+
 ## Core Endpoints (Planned)
 
 These routes are scaffolded and currently return `501 Not Implemented` until feature implementation.
-
-### `POST /generate-question`
-Generate AI coding questions with title, difficulty, tags, constraints, and hidden test cases.
 
 ### `POST /evaluate-design`
 Evaluate system design diagram and architecture text using Gemini.
 
 ### `POST /detect-cheating`
 Analyze proctoring signals and return suspiciousness flags.
-
-### `POST /generate-feedback`
-Generate AI code mentor feedback on complexity, readability, and edge cases.
 
 ### `GET /session-score`
 Get weighted score for a practice session.

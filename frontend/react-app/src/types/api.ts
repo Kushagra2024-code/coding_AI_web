@@ -62,3 +62,47 @@ export interface SubmitCodeResponse {
     expected: string
   }>
 }
+
+export interface GenerateQuestionPayload {
+  difficulty: Difficulty
+  tags: string[]
+}
+
+export interface GeneratedQuestionResponse {
+  question: QuestionDetail
+}
+
+export interface GenerateFeedbackPayload {
+  problemTitle: string
+  code: string
+  language: SupportedLanguage
+  correctnessScore: number
+  efficiencyScore: number
+}
+
+export interface CodeFeedback {
+  summary: string
+  timeComplexity: string
+  memoryComplexity: string
+  readabilityScore: number
+  edgeCaseScore: number
+  suggestions: string[]
+}
+
+export interface GenerateFeedbackResponse {
+  feedback: CodeFeedback
+}
+
+export interface InterviewTurnPayload {
+  problemTitle: string
+  problemSummary: string
+  candidateMessage: string
+}
+
+export interface InterviewTurnResponse {
+  turn: {
+    interviewerMessage: string
+    followUpQuestion: string
+    focusArea: string
+  }
+}

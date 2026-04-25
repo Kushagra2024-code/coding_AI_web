@@ -62,6 +62,7 @@ Backend (`backend/node-server/.env`):
 - `JWT_EXPIRES_IN`
 - `FRONTEND_URL`
 - `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `JUDGE0_API_URL`
 - `JUDGE0_API_KEY`
 
@@ -86,11 +87,14 @@ Phase 2 coding workflow endpoints:
 - `GET /api/questions/:questionId` (Bearer token required)
 - `POST /api/submit-code` (Bearer token required)
 
+Phase 3 AI layer endpoints:
+- `POST /api/generate-question` (Bearer token required)
+- `POST /api/generate-feedback` (Bearer token required)
+- `POST /api/interview/message` (Bearer token required)
+
 Planned core endpoints (currently scaffolded with `501 Not Implemented`):
-- `POST /api/generate-question`
 - `POST /api/evaluate-design`
 - `POST /api/detect-cheating`
-- `POST /api/generate-feedback`
 - `GET /api/session-score`
 - `GET /api/analytics`
 

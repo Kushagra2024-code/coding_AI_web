@@ -11,6 +11,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('1d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
   JUDGE0_API_URL: z.string().url().optional(),
   JUDGE0_API_KEY: z.string().optional(),
 })

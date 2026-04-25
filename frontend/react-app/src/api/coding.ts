@@ -1,5 +1,11 @@
 import { api } from './client'
 import type {
+  GenerateQuestionPayload,
+  GeneratedQuestionResponse,
+  GenerateFeedbackPayload,
+  GenerateFeedbackResponse,
+  InterviewTurnPayload,
+  InterviewTurnResponse,
   QuestionDetail,
   QuestionListItem,
   SubmitCodePayload,
@@ -36,5 +42,20 @@ export async function fetchQuestion(questionId: string): Promise<QuestionDetail>
 
 export async function runCode(payload: SubmitCodePayload): Promise<SubmitCodeResponse> {
   const { data } = await api.post<SubmitCodeResponse>('/submit-code', payload)
+  return data
+}
+
+export async function generateAiQuestion(payload: GenerateQuestionPayload): Promise<GeneratedQuestionResponse> {
+  const { data } = await api.post<GeneratedQuestionResponse>('/generate-question', payload)
+  return data
+}
+
+export async function generateAiFeedback(payload: GenerateFeedbackPayload): Promise<GenerateFeedbackResponse> {
+  const { data } = await api.post<GenerateFeedbackResponse>('/generate-feedback', payload)
+  return data
+}
+
+export async function askInterviewer(payload: InterviewTurnPayload): Promise<InterviewTurnResponse> {
+  const { data } = await api.post<InterviewTurnResponse>('/interview/message', payload)
   return data
 }

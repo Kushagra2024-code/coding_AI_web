@@ -21,6 +21,8 @@ cp frontend/react-app/.env.example frontend/react-app/.env
 
 Update secrets and API URLs before running.
 
+For Phase 3 AI endpoints, set `GEMINI_API_KEY` and optionally `GEMINI_MODEL` (default: `gemini-1.5-flash`).
+
 ## Run in Development
 
 Terminal 1:
