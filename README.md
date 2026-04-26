@@ -96,10 +96,19 @@ Phase 4 system design endpoints:
 - `GET /api/design/questions` (Bearer token required)
 - `POST /api/evaluate-design` (Bearer token required)
 
-Planned core endpoints (currently scaffolded with `501 Not Implemented`):
-- `POST /api/detect-cheating`
-- `GET /api/session-score`
-- `GET /api/analytics`
+Phase 5 & 6 core endpoints (Now Implemented):
+- `POST /api/detect-cheating` (Bearer token required)
+- `GET /api/session-score` (Bearer token required)
+- `GET /api/analytics` (Bearer token required)
+
+## Containerization
+
+The project is production-ready with Docker:
+
+```bash
+# Start the entire stack (backend + frontend)
+docker-compose up --build
+```
 
 ## Deployment (Free Tier)
 
@@ -109,3 +118,11 @@ Planned core endpoints (currently scaffolded with `501 Not Implemented`):
 4. Set environment variables in each platform dashboard.
 
 More details in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

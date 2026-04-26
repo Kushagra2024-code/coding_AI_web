@@ -10,7 +10,7 @@ export interface ScoreBreakdown {
 }
 
 export interface PracticeSession {
-  userId: Types.ObjectId
+  userId: string
   type: SessionType
   startTime: Date
   endTime?: Date
@@ -36,9 +36,8 @@ const scoreBreakdownSchema = new Schema<ScoreBreakdown>(
 const sessionSchema = new Schema<PracticeSession, SessionModel>(
   {
     userId: {
-      type: Schema.Types.ObjectId,
+      type: String,
       required: true,
-      ref: 'User',
       index: true,
     },
     type: {

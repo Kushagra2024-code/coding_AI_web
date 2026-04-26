@@ -30,8 +30,8 @@ export interface DesignEvaluation {
 }
 
 export interface DesignSubmission {
-  userId: Types.ObjectId
-  sessionId?: Types.ObjectId
+  userId: string
+  sessionId?: string
   questionTitle: string
   architectureText: string
   diagram: {
@@ -86,8 +86,8 @@ const evaluationSchema = new Schema<DesignEvaluation>(
 
 const designSubmissionSchema = new Schema<DesignSubmission, DesignSubmissionModel>(
   {
-    userId: { type: Schema.Types.ObjectId, required: true, ref: 'User', index: true },
-    sessionId: { type: Schema.Types.ObjectId, required: false, ref: 'Session', index: true },
+    userId: { type: String, required: true, index: true },
+    sessionId: { type: String, required: false, index: true },
     questionTitle: { type: String, required: true, trim: true },
     architectureText: { type: String, required: true },
     diagram: {

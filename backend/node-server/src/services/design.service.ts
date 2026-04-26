@@ -1,3 +1,6 @@
+import { isDatabaseReady } from '../config/db'
+import { DesignQuestionEntity, DesignQuestion as DesignQuestionType } from '../models/DesignQuestion'
+
 export interface DesignQuestion {
   id: string
   title: string
@@ -8,27 +11,23 @@ export interface DesignQuestion {
 const fallbackDesignQuestions: DesignQuestion[] = [
   {
     id: 'design-twitter',
-    title: 'Design Twitter',
+    title: 'Design Twitter (Local)',
     description:
       'Design a social feed service supporting tweets, follow relationships, fan-out timelines, and real-time updates.',
     focusAreas: ['feed generation', 'caching', 'partitioning', 'event streaming'],
   },
-  {
-    id: 'design-uber',
-    title: 'Design Uber',
-    description:
-      'Design a ride-hailing platform with driver dispatch, ETA prediction, surge pricing, and location updates.',
-    focusAreas: ['geo-indexing', 'matching', 'fault tolerance', 'real-time systems'],
-  },
-  {
-    id: 'design-url-shortener',
-    title: 'Design URL Shortener',
-    description:
-      'Design a URL shortener handling high write/read throughput, analytics tracking, and custom aliases.',
-    focusAreas: ['id generation', 'storage', 'cache', 'abuse prevention'],
-  },
 ]
 
 export async function listDesignQuestions(): Promise<DesignQuestion[]> {
-  return fallbackDesignQuestions
+  if (!isDatabaseReady()) {
+    return fallbackDesignQuestions
+  }
+
+  const questions = await DesignQuestionEntity.find().sort({ createdAt: -1 }).lean()
+  return questions.map((q) => ({
+    id: q._id.toString(),
+    title: q.title,
+    description: q.description,
+    focusAreas: q.focusAreas,
+  }))
 }

@@ -1,16 +1,17 @@
 import { Router } from 'express'
+import { detectCheating, getSessionScore, getAnalytics } from '../controllers/core.controller'
+import { requireAuth } from '../middlewares/auth.middleware'
 
 export const coreRouter = Router()
 
-coreRouter.post('/detect-cheating', (_req, res) => {
-  res.status(501).json({ message: 'Not implemented yet' })
+coreRouter.post('/detect-cheating', requireAuth, (req, res, next) => {
+  detectCheating(req, res).catch(next)
 })
 
-
-coreRouter.get('/session-score', (_req, res) => {
-  res.status(501).json({ message: 'Not implemented yet' })
+coreRouter.get('/session-score', requireAuth, (req, res, next) => {
+  getSessionScore(req, res).catch(next)
 })
 
-coreRouter.get('/analytics', (_req, res) => {
-  res.status(501).json({ message: 'Not implemented yet' })
+coreRouter.get('/analytics', requireAuth, (req, res, next) => {
+  getAnalytics(req, res).catch(next)
 })

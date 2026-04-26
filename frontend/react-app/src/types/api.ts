@@ -16,10 +16,12 @@ export interface QuestionListItem {
   source: 'curated' | 'ai_generated'
 }
 
-export interface VisibleTestCase {
+export interface TestCase {
   input: string
   output: string
 }
+
+export type VisibleTestCase = TestCase
 
 export interface QuestionDetail {
   id: string
@@ -38,6 +40,8 @@ export interface SubmitCodePayload {
   questionId: string
   code: string
   language: SupportedLanguage
+  runOnly?: boolean
+  timerSeconds?: number
 }
 
 export interface SubmitCodeResponse {
@@ -46,6 +50,7 @@ export interface SubmitCodeResponse {
   totalTests: number
   correctnessScore: number
   efficiencyScore: number
+  isSubmission?: boolean
   execution: {
     stdout?: string
     stderr?: string
@@ -157,4 +162,49 @@ export interface DesignEvaluation {
 
 export interface EvaluateDesignResponse {
   evaluation: DesignEvaluation
+}
+
+export interface CheatingSignals {
+  tabSwitchCount: number
+  windowBlurCount: number
+  pasteChars: number
+  solveTimeSeconds?: number
+  similarityScore?: number
+}
+
+export interface DetectCheatingResponse {
+  sessionId: string | null
+  riskScore: number
+  severity: 'low' | 'medium' | 'high'
+  flags: string[]
+}
+
+export interface AnalyticsSummary {
+  totalSessions: number
+  totalSubmissions: number
+  avgOverallScore: number
+}
+
+export interface TopicStrength {
+  tag: string
+  averageCorrectness: number
+  averageEfficiency: number
+  count: number
+}
+
+export interface RecentActivityItem {
+  type: 'coding' | 'design'
+  id: string
+  timestamp: string
+  score: number
+  label: string
+}
+
+export interface AnalyticsResponse {
+  summary: AnalyticsSummary
+  topicStrengths: TopicStrength[]
+  recentActivity: RecentActivityItem[]
+  history: {
+    sessions: any[]
+  }
 }

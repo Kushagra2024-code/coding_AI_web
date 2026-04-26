@@ -14,6 +14,9 @@ import type {
   SubmitCodePayload,
   SubmitCodeResponse,
   UserProfile,
+  AnalyticsResponse,
+  CheatingSignals,
+  DetectCheatingResponse,
 } from '../types/api'
 
 export async function registerForDemo(): Promise<{ token: string; user: UserProfile }> {
@@ -70,5 +73,23 @@ export async function fetchDesignQuestions(): Promise<DesignQuestion[]> {
 
 export async function evaluateSystemDesign(payload: DesignEvaluationPayload): Promise<EvaluateDesignResponse> {
   const { data } = await api.post<EvaluateDesignResponse>('/evaluate-design', payload)
+  return data
+}
+
+export async function fetchAnalytics(): Promise<AnalyticsResponse> {
+  const { data } = await api.get<AnalyticsResponse>('/analytics')
+  return data
+}
+
+export async function detectCheating(payload: {
+  sessionId?: string
+  signals: CheatingSignals
+}): Promise<DetectCheatingResponse> {
+  const { data } = await api.post<DetectCheatingResponse>('/detect-cheating', payload)
+  return data
+}
+
+export async function createCodingQuestion(payload: Partial<QuestionDetail>): Promise<{ id: string; message: string }> {
+  const { data } = await api.post<{ id: string; message: string }>('/questions', payload)
   return data
 }

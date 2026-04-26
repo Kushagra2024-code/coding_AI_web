@@ -12,9 +12,9 @@ export interface ExecutionResult {
 }
 
 export interface Submission {
-  userId: Types.ObjectId
-  sessionId?: Types.ObjectId
-  questionId: Types.ObjectId
+  userId: string
+  sessionId?: string
+  questionId: string
   code: string
   language: SubmissionLanguage
   passedTests: number
@@ -22,6 +22,7 @@ export interface Submission {
   correctnessScore: number
   efficiencyScore: number
   execution: ExecutionResult
+  timeTakenSeconds?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -43,15 +44,16 @@ const executionSchema = new Schema<ExecutionResult>(
 
 const submissionSchema = new Schema<Submission, SubmissionModel>(
   {
-    userId: { type: Schema.Types.ObjectId, required: true, ref: 'User', index: true },
-    sessionId: { type: Schema.Types.ObjectId, required: false, ref: 'Session', index: true },
-    questionId: { type: Schema.Types.ObjectId, required: true, ref: 'Question', index: true },
+    userId: { type: String, required: true, index: true },
+    sessionId: { type: String, required: false, index: true },
+    questionId: { type: String, required: true, index: true },
     code: { type: String, required: true },
     language: { type: String, enum: ['cpp', 'python', 'java', 'javascript'], required: true },
     passedTests: { type: Number, required: true, min: 0 },
     totalTests: { type: Number, required: true, min: 1 },
     correctnessScore: { type: Number, required: true, min: 0, max: 100 },
     efficiencyScore: { type: Number, required: true, min: 0, max: 100 },
+    timeTakenSeconds: { type: Number, required: false, min: 0 },
     execution: { type: executionSchema, required: true },
   },
   { timestamps: true },

@@ -10,6 +10,10 @@ import { designRouter } from './design.routes'
 
 export const apiRouter = Router()
 
+apiRouter.get('/', (_req, res) => {
+  res.json({ message: 'AI OA Practice API is online', version: '1.0.0' })
+})
+
 apiRouter.use('/', healthRouter)
 apiRouter.use('/', coreRouter)
 apiRouter.use('/', authRouter)

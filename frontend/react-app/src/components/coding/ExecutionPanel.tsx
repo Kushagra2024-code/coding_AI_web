@@ -8,7 +8,19 @@ interface ExecutionPanelProps {
 export function ExecutionPanel({ result, error }: ExecutionPanelProps) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Execution Result</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Execution Result</h3>
+        {result?.isSubmission && (
+          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/30">
+            Persistent Submission
+          </span>
+        )}
+        {result && !result.isSubmission && (
+          <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border border-slate-700">
+            Dry Run
+          </span>
+        )}
+      </div>
 
       {error ? (
         <p className="mt-3 rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>
@@ -26,6 +38,40 @@ export function ExecutionPanel({ result, error }: ExecutionPanelProps) {
           </div>
 
           <ResultBlock title="Stdout" value={result.execution.stdout || '(empty)'} />
+          
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Test Case Details</h4>
+            <div className="grid gap-3">
+              {result.testResults?.map((test) => (
+                <div 
+                  key={test.index} 
+                  className={`rounded-lg border p-3 ${
+                    test.passed ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-rose-500/30 bg-rose-500/5'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-bold uppercase ${test.passed ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      Test Case {test.index + 1}: {test.passed ? 'Passed' : 'Failed'}
+                    </span>
+                    <span className="text-xs text-slate-500">{test.status}</span>
+                  </div>
+                  {!test.passed && (
+                    <div className="grid gap-2 sm:grid-cols-2 mt-2 border-t border-slate-800 pt-2 text-[11px]">
+                      <div>
+                        <p className="text-slate-500 uppercase tracking-tighter mb-1">Expected</p>
+                        <pre className="text-slate-300 bg-slate-950 p-1.5 rounded">{test.expected || '(empty)'}</pre>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 uppercase tracking-tighter mb-1">Actual</p>
+                        <pre className="text-rose-300 bg-slate-950 p-1.5 rounded">{test.stdout || '(empty)'}</pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <ResultBlock title="Stderr" value={result.execution.stderr || '(empty)'} />
           <ResultBlock title="Compile Output" value={result.execution.compileOutput || '(empty)'} />
         </div>

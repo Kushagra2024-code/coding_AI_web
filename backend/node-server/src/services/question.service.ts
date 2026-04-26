@@ -145,3 +145,16 @@ export async function getQuestionWithHiddenTests(
     hiddenTests: question.hiddenTests,
   }
 }
+
+export async function createQuestion(data: Partial<Question>): Promise<string> {
+  if (!isDatabaseReady()) {
+    throw new Error('Database not connected. Cannot create persistent question.')
+  }
+
+  const question = await QuestionEntity.create({
+    ...data,
+    source: 'curated',
+  })
+
+  return question._id.toString()
+}

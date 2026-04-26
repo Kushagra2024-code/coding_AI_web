@@ -11,6 +11,8 @@ const submitCodeSchema = z.object({
   sessionId: z.string().min(3).optional(),
   code: z.string().min(1),
   language: z.enum(['cpp', 'python', 'java', 'javascript']),
+  runOnly: z.boolean().optional(),
+  timerSeconds: z.number().optional(),
 })
 
 function normalize(text: string): string {
@@ -45,7 +47,9 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
     return
   }
 
-  const tests = [...question.visibleTests, ...question.hiddenTests]
+  // If runOnly, use visible tests. Otherwise, use all tests.
+  const tests = payload.runOnly ? question.visibleTests : [...question.visibleTests, ...question.hiddenTests]
+  
   if (!tests.length) {
     res.status(400).json({ message: 'Question has no test cases' })
     return
@@ -97,7 +101,8 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
   const averageTime = Math.round(totalTime / totalTests)
   const efficiencyScore = computeEfficiencyScore(averageTime)
 
-  if (isDatabaseReady()) {
+  // Only persist if NOT runOnly
+  if (!payload.runOnly && isDatabaseReady()) {
     if (payload.sessionId && !mongoose.isValidObjectId(payload.sessionId)) {
       res.status(400).json({ message: 'Invalid sessionId' })
       return
@@ -113,6 +118,7 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
       totalTests,
       correctnessScore,
       efficiencyScore,
+      timeTakenSeconds: payload.timerSeconds,
       execution: {
         stdout: finalExecution.stdout ?? '',
         stderr: finalExecution.stderr ?? '',
@@ -130,6 +136,7 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
     totalTests,
     correctnessScore,
     efficiencyScore,
+    isSubmission: !payload.runOnly,
     execution: {
       stdout: finalExecution.stdout ?? '',
       stderr: finalExecution.stderr ?? '',

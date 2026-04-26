@@ -91,7 +91,8 @@ export async function generateCodingQuestionWithAi(params: {
     }
   }
 
-  const prompt = `You are an expert competitive-programming setter.
+  try {
+    const prompt = `You are an expert competitive-programming setter.
 Return only valid JSON with this exact shape:
 {
   "title": string,
@@ -114,7 +115,21 @@ Requirements:
 - Hidden tests must be non-trivial edge cases.
 - No markdown, no explanation outside JSON.`
 
-  return generateJson<GeneratedQuestion>(prompt)
+    return await generateJson<GeneratedQuestion>(prompt)
+  } catch (err) {
+    console.warn('Gemini API failed, returning question fallback:', err)
+    return {
+      title: 'AI Fallback: Balanced Binary Tree',
+      difficulty: params.difficulty,
+      tags: params.tags.length ? params.tags : ['tree', 'recursion'],
+      description: 'Given a binary tree, determine if it is height-balanced.',
+      constraints: ['The number of nodes in the tree is in the range [0, 5000].', '-10^4 <= Node.val <= 10^4'],
+      sampleInput: '[3,9,20,null,null,15,7]',
+      sampleOutput: 'true',
+      visibleTests: [{ input: '3\n9 20\nnull null 15 7', output: 'true' }],
+      hiddenTests: [{ input: '1\n2\n2\n3 3\nnull null\n4 4', output: 'false' }],
+    }
+  }
 }
 
 export async function generateCodeFeedbackWithAi(params: {
@@ -162,7 +177,26 @@ Rules:
 - suggestions length: 3 to 5
 - no markdown, no text outside JSON.`
 
-  return generateJson<CodeFeedback>(prompt)
+  try {
+    return await generateJson<CodeFeedback>(prompt)
+  } catch (err) {
+    if (env.NODE_ENV === 'development') {
+      console.warn('Gemini API failed, returning code feedback fallback:', err)
+      return {
+        summary: 'Fallback review: focus on cleaner edge-case handling and tighter complexity. (Development Mock)',
+        timeComplexity: 'Likely O(n log n) or worse depending on implementation details.',
+        memoryComplexity: 'Likely O(n).',
+        readabilityScore: 72,
+        edgeCaseScore: 65,
+        suggestions: [
+          'Add explicit handling for empty or single-element inputs.',
+          'Use descriptive variable names for interviewer readability.',
+          'Document complexity trade-offs in brief comments.',
+        ],
+      }
+    }
+    throw err
+  }
 }
 
 export async function generateInterviewTurnWithAi(params: {
@@ -197,7 +231,20 @@ Rules:
 - focusArea should be one word (e.g., complexity, edge-cases, optimization, correctness).
 - no markdown, no extra text.`
 
-  return generateJson<InterviewResponse>(prompt)
+  try {
+    return await generateJson<InterviewResponse>(prompt)
+  } catch (err) {
+    if (env.NODE_ENV === 'development') {
+      console.warn('Gemini API failed, returning interview fallback:', err)
+      return {
+        interviewerMessage:
+          'Let us focus on your approach. Explain why your chosen data structure is optimal for this problem. (Development Mock)',
+        followUpQuestion: 'What is the worst-case time complexity and can it be improved?',
+        focusArea: 'complexity',
+      }
+    }
+    throw err
+  }
 }
 
 export async function evaluateSystemDesignWithAi(params: {
@@ -253,5 +300,27 @@ Rules:
 - Provide 3-6 actionable improvements.
 - No markdown and no text outside JSON.`
 
-  return generateJson<DesignEvaluation>(prompt)
+  try {
+    return await generateJson<DesignEvaluation>(prompt)
+  } catch (err) {
+    if (env.NODE_ENV === 'development') {
+      console.warn('Gemini API failed, returning design fallback:', err)
+      return {
+        score: 72,
+        scalability: 74,
+        faultTolerance: 68,
+        databaseChoice: 76,
+        cachingStrategy: 69,
+        microservicesArchitecture: 73,
+        missingComponents: ['Rate limiting layer', 'Disaster recovery strategy'],
+        improvements: [
+          'Add explicit cache invalidation strategy and TTL policy.',
+          'Introduce queue-based decoupling for write-heavy components.',
+          'Define failover strategy for stateful services and datastore replicas.',
+        ],
+        summary: 'Strong baseline architecture but needs deeper reliability and cache coherence planning. (Development Mock Output)',
+      }
+    }
+    throw err
+  }
 }

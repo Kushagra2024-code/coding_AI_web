@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit'
 import morgan from 'morgan'
 import { apiRouter } from './routes'
 import { env } from './config/env'
+import { requestLogger } from './utils/logger'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
 
 export function createApp() {
@@ -13,7 +14,7 @@ export function createApp() {
   app.use(helmet())
   app.use(cors({ origin: env.FRONTEND_URL, credentials: true }))
   app.use(express.json({ limit: '1mb' }))
-  app.use(morgan('dev'))
+  app.use(requestLogger)
 
   app.use(
     rateLimit({

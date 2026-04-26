@@ -43,6 +43,6 @@ const userSchema = new Schema<User, UserModel>(
   },
 )
 
-userSchema.index({ email: 1 }, { unique: true })
+
 
 export const UserEntity = mongoose.model<User, UserModel>('User', userSchema)
