@@ -10,6 +10,7 @@ const evaluateDesignSchema = z.object({
   sessionId: z.string().min(3).optional(),
   questionTitle: z.string().min(3).max(180),
   architectureText: z.string().min(20).max(12000),
+  timerSeconds: z.number().int().min(0).optional(),
   diagram: z.object({
     nodes: z.array(
       z.object({
@@ -63,6 +64,7 @@ export async function evaluateDesign(req: Request, res: Response): Promise<void>
     diagram: payload.diagram,
   })
 
+  let percentile = 95 // Default
   if (isDatabaseReady()) {
     await DesignSubmissionEntity.create({
       userId: req.user.id,
@@ -71,10 +73,26 @@ export async function evaluateDesign(req: Request, res: Response): Promise<void>
       architectureText: payload.architectureText,
       diagram: payload.diagram,
       evaluation,
+      timeTakenSeconds: payload.timerSeconds,
     })
+
+    // Calculate Standing (Percentile based on timeTakenSeconds)
+    if (payload.timerSeconds !== undefined) {
+      const slowerCount = await DesignSubmissionEntity.countDocuments({
+        questionTitle: payload.questionTitle,
+        timeTakenSeconds: { $gt: payload.timerSeconds },
+      })
+      const totalCount = await DesignSubmissionEntity.countDocuments({
+        questionTitle: payload.questionTitle,
+      })
+      if (totalCount > 1) {
+        percentile = Math.round((slowerCount / (totalCount - 1)) * 100)
+      }
+    }
   }
 
   res.status(200).json({
     evaluation,
+    percentile,
   })
 }

@@ -17,6 +17,8 @@ import type {
   AnalyticsResponse,
   CheatingSignals,
   DetectCheatingResponse,
+  RefactorSuggestion,
+  DesignRefactor,
 } from '../types/api'
 
 export async function registerForDemo(): Promise<{ token: string; user: UserProfile }> {
@@ -92,4 +94,21 @@ export async function detectCheating(payload: {
 export async function createCodingQuestion(payload: Partial<QuestionDetail>): Promise<{ id: string; message: string }> {
   const { data } = await api.post<{ id: string; message: string }>('/questions', payload)
   return data
+}
+
+export async function fetchCodeRefactor(payload: {
+  problemTitle: string
+  code: string
+  language: string
+}): Promise<RefactorSuggestion> {
+  const { data } = await api.post<{ refactor: RefactorSuggestion }>('/code-refactor', payload)
+  return data.refactor
+}
+
+export async function fetchDesignRefactor(payload: {
+  questionTitle: string
+  architectureText: string
+}): Promise<DesignRefactor> {
+  const { data } = await api.post<{ refactor: DesignRefactor }>('/design-refactor', payload)
+  return data.refactor
 }

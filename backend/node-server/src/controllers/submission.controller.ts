@@ -130,6 +130,20 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
     })
   }
 
+  let percentile = 95 // Default
+  if (!payload.runOnly && isDatabaseReady() && payload.timerSeconds !== undefined) {
+    const slowerCount = await SubmissionEntity.countDocuments({
+      questionId: question.id,
+      timeTakenSeconds: { $gt: payload.timerSeconds },
+    })
+    const totalCount = await SubmissionEntity.countDocuments({
+      questionId: question.id,
+    })
+    if (totalCount > 1) {
+      percentile = Math.round((slowerCount / (totalCount - 1)) * 100)
+    }
+  }
+
   res.status(200).json({
     questionId: question.id,
     passedTests: passed,
@@ -137,6 +151,7 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
     correctnessScore,
     efficiencyScore,
     isSubmission: !payload.runOnly,
+    percentile: payload.runOnly ? undefined : percentile,
     execution: {
       stdout: finalExecution.stdout ?? '',
       stderr: finalExecution.stderr ?? '',

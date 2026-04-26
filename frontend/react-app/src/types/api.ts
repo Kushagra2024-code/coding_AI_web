@@ -51,6 +51,7 @@ export interface SubmitCodeResponse {
   correctnessScore: number
   efficiencyScore: number
   isSubmission?: boolean
+  percentile?: number
   execution: {
     stdout?: string
     stderr?: string
@@ -142,6 +143,7 @@ export interface DesignEvaluationPayload {
   sessionId?: string
   questionTitle: string
   architectureText: string
+  timerSeconds?: number
   diagram: {
     nodes: DiagramNode[]
     edges: DiagramEdge[]
@@ -162,6 +164,7 @@ export interface DesignEvaluation {
 
 export interface EvaluateDesignResponse {
   evaluation: DesignEvaluation
+  percentile: number
 }
 
 export interface CheatingSignals {
@@ -207,4 +210,16 @@ export interface AnalyticsResponse {
   history: {
     sessions: any[]
   }
+}
+
+export interface RefactorSuggestion {
+  improvedCode: string
+  explanation: string
+  changes: string[]
+}
+
+export interface DesignRefactor {
+  suggestedFocus: string
+  architecturalPatterns: string[]
+  componentsToLink: string[]
 }

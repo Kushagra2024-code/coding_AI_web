@@ -40,6 +40,18 @@ export interface DesignEvaluation {
   summary: string
 }
 
+export interface RefactorSuggestion {
+  improvedCode: string
+  explanation: string
+  changes: string[]
+}
+
+export interface DesignRefactor {
+  suggestedFocus: string
+  architecturalPatterns: string[]
+  componentsToLink: string[]
+}
+
 function extractJsonObject(text: string): string {
   const fenced = text.match(/```json\s*([\s\S]*?)```/i)
   if (fenced?.[1]) {
@@ -322,5 +334,88 @@ Rules:
       }
     }
     throw err
+  }
+}
+
+export async function generateRefactoredCodeWithAi(params: {
+  problemTitle: string
+  code: string
+  language: string
+}): Promise<RefactorSuggestion> {
+  if (!env.GEMINI_API_KEY) {
+    return {
+      improvedCode: params.code + '\n// This is a mock refactor\n// Use cleaner variable names\n// Optimized loop logic',
+      explanation: 'Refactoring focuses on readability and slight performance gains.',
+      changes: ['Renamed variables', 'Removed redundant checks'],
+    }
+  }
+
+  const prompt = `You are a world-class software engineer.
+Return only valid JSON with this exact shape:
+{
+  "improvedCode": string,
+  "explanation": string,
+  "changes": string[]
+}
+
+Problem: ${params.problemTitle}
+Language: ${params.language}
+Current Code:
+${params.code}
+
+Rules:
+- improvedCode must be a complete, runnable version of the code.
+- Focus on clean code, optimal complexity, and idiomatic ${params.language}.
+- Keep explanation concise.
+- No markdown, no extra text.`
+
+  try {
+    return await generateJson<RefactorSuggestion>(prompt)
+  } catch (err) {
+    return {
+      improvedCode: params.code,
+      explanation: 'Could not generate refactor at this time.',
+      changes: [],
+    }
+  }
+}
+
+export async function suggestDesignImprovements(params: {
+  questionTitle: string
+  architectureText: string
+}): Promise<DesignRefactor> {
+  if (!env.GEMINI_API_KEY) {
+    return {
+      suggestedFocus: 'High Availability',
+      architecturalPatterns: ['Sidecar Pattern', 'CQRS'],
+      componentsToLink: ['API Gateway -> Auth Service', 'Database -> Read Replica'],
+    }
+  }
+
+  const prompt = `You are a senior system design architect.
+Return only valid JSON with this exact shape:
+{
+  "suggestedFocus": string,
+  "architecturalPatterns": string[],
+  "componentsToLink": string[]
+}
+
+Question: ${params.questionTitle}
+Current Architecture:
+${params.architectureText}
+
+Rules:
+- Provide 2-3 specific architectural patterns.
+- Suggest 2-3 missing component connections.
+- Keep output strictly JSON.`
+
+  try {
+    return await generateJson<DesignRefactor>(prompt)
+  } catch (err) {
+    return {
+      suggestedFocus: 'Standard Scaling',
+      architecturalPatterns: [],
+      componentsToLink: [],
+    }
   }
 }

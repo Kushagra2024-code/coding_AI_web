@@ -6,10 +6,14 @@ import {
   generateAiFeedback,
   generateAiQuestion,
   runCode,
+  detectCheating,
+  fetchCodeRefactor,
 } from '../api/coding'
+import { useCheatingDetection } from '../hooks/useCheatingDetection'
 import { EditorPanel } from '../components/coding/EditorPanel'
 import { ExecutionPanel } from '../components/coding/ExecutionPanel'
 import { FeedbackPanel } from '../components/coding/FeedbackPanel'
+import { RefactorPanel } from '../components/coding/RefactorPanel'
 import { InterviewerPanel } from '../components/coding/InterviewerPanel'
 import { QuestionPanel } from '../components/coding/QuestionPanel'
 import { QuestionSidebar } from '../components/coding/QuestionSidebar'
@@ -20,6 +24,7 @@ import type {
   QuestionListItem,
   SubmitCodeResponse,
   SupportedLanguage,
+  RefactorSuggestion,
 } from '../types/api'
 
 const starterCode: Record<SupportedLanguage, string> = {
@@ -40,6 +45,8 @@ export default function CodingWorkspace() {
   const [result, setResult] = useState<SubmitCodeResponse | null>(null)
   const [feedback, setFeedback] = useState<CodeFeedback | null>(null)
   const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [refactorSuggestion, setRefactorSuggestion] = useState<RefactorSuggestion | null>(null)
+  const [refactorLoading, setRefactorLoading] = useState(false)
 
   const [timer, setTimer] = useState(0)
   const [resetKey, setResetKey] = useState(0)
@@ -52,6 +59,8 @@ export default function CodingWorkspace() {
   const [generatingQuestion, setGeneratingQuestion] = useState(false)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { signals, getSignals, resetSignals } = useCheatingDetection()
 
   const selectedQuestion = useMemo(
     () => questions.find((q) => q.id === selectedQuestionId) ?? null,
@@ -133,6 +142,13 @@ export default function CodingWorkspace() {
       setResult(response)
       setFeedback(null)
       alert(`Submission successful! Score: ${response.correctnessScore}%`)
+      
+      // Cheating detection report
+      const signals = getSignals()
+      await detectCheating({ 
+        signals: { ...signals, solveTimeSeconds: timer } 
+      })
+      resetSignals()
     } catch {
       setError('Code submission failed.')
     } finally {
@@ -180,6 +196,21 @@ export default function CodingWorkspace() {
     }
   }
 
+  const handleCodeRefactor = async () => {
+    if (!questionDetail) return
+    setRefactorLoading(true)
+    try {
+      const suggestion = await fetchCodeRefactor({
+        problemTitle: questionDetail.title,
+        code,
+        language,
+      })
+      setRefactorSuggestion(suggestion)
+    } finally {
+      setRefactorLoading(false)
+    }
+  }
+
   const handleAskInterviewer = async () => {
     if (!questionDetail || !candidateMessage.trim()) return
     setAskingInterviewer(true)
@@ -222,12 +253,18 @@ export default function CodingWorkspace() {
             running={running}
             timerSeconds={timer}
           />
-          <ExecutionPanel result={result} error={error} />
+          <ExecutionPanel result={result} error={error} signals={signals} />
           <FeedbackPanel
             feedback={feedback}
             loading={feedbackLoading}
             onGenerate={handleGenerateFeedback}
             disabled={!result || !questionDetail}
+          />
+          <RefactorPanel 
+            refactor={refactorSuggestion}
+            loading={refactorLoading}
+            onGenerate={handleCodeRefactor}
+            disabled={!feedback || !questionDetail}
           />
           <InterviewerPanel
             candidateMessage={candidateMessage}

@@ -39,6 +39,7 @@ export interface DesignSubmission {
     edges: DiagramEdge[]
   }
   evaluation: DesignEvaluation
+  timeTakenSeconds?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -98,6 +99,7 @@ const designSubmissionSchema = new Schema<DesignSubmission, DesignSubmissionMode
       required: true,
     },
     evaluation: { type: evaluationSchema, required: true },
+    timeTakenSeconds: { type: Number, required: false, min: 0 },
   },
   { timestamps: true },
 )

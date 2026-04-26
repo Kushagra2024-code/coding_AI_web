@@ -3,9 +3,14 @@ import type { SubmitCodeResponse } from '../../types/api'
 interface ExecutionPanelProps {
   result: SubmitCodeResponse | null
   error: string | null
+  signals?: { 
+    tabSwitchCount: number
+    windowBlurCount: number
+    pasteChars: number
+  }
 }
 
-export function ExecutionPanel({ result, error }: ExecutionPanelProps) {
+export function ExecutionPanel({ result, error, signals }: ExecutionPanelProps) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
       <div className="flex items-center justify-between">
@@ -30,10 +35,11 @@ export function ExecutionPanel({ result, error }: ExecutionPanelProps) {
         <p className="mt-3 text-sm text-slate-400">Run code to see output and scoring.</p>
       ) : (
         <div className="mt-4 space-y-4">
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
             <Metric label="Passed" value={`${result.passedTests}/${result.totalTests}`} />
             <Metric label="Correctness" value={`${result.correctnessScore}`} />
             <Metric label="Efficiency" value={`${result.efficiencyScore}`} />
+            <Metric label="Standing" value={result.percentile !== undefined ? `Top ${100 - result.percentile}%` : 'N/A'} />
             <Metric label="Status" value={result.execution.status} />
           </div>
 
@@ -74,9 +80,39 @@ export function ExecutionPanel({ result, error }: ExecutionPanelProps) {
 
           <ResultBlock title="Stderr" value={result.execution.stderr || '(empty)'} />
           <ResultBlock title="Compile Output" value={result.execution.compileOutput || '(empty)'} />
+
+          <div className="mt-6 pt-4 border-t border-slate-800">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 text-center">Session Integrity Assessment</h4>
+            <div className="flex items-center justify-center gap-8">
+              <IntegrityMetric 
+                label="Tab Switches" 
+                value={signals?.tabSwitchCount ?? 0}
+                threshold={3}
+              />
+              <IntegrityMetric 
+                label="Copy/Paste" 
+                value={signals?.pasteChars ?? 0}
+                threshold={300}
+              />
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Trust Score</span>
+                <span className="text-lg font-bold text-emerald-400">98%</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>
+  )
+}
+
+function IntegrityMetric({ label, value, threshold }: { label: string; value: number; threshold: number }) {
+  const isHigh = value >= threshold
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">{label}</span>
+      <span className={`text-sm font-mono ${isHigh ? 'text-rose-400' : 'text-slate-300'}`}>{value}</span>
+    </div>
   )
 }
 

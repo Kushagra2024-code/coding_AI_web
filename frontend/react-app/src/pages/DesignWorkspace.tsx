@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   evaluateSystemDesign,
   fetchDesignQuestions,
+  fetchDesignRefactor,
 } from '../api/coding'
 import { DesignEvaluationPanel } from '../components/design/DesignEvaluationPanel'
 import { DrawboardCanvas } from '../components/design/DrawboardCanvas'
@@ -10,6 +11,7 @@ import Layout from '../components/common/Layout'
 import type {
   DesignEvaluation,
   DesignQuestion,
+  DesignRefactor,
   DiagramEdge,
   DiagramNode,
   DiagramNodeType,
@@ -36,9 +38,13 @@ export default function DesignWorkspace() {
   const [designEdges, setDesignEdges] = useState<DiagramEdge[]>([])
   const [architectureText, setArchitectureText] = useState('')
   const [designEvaluation, setDesignEvaluation] = useState<DesignEvaluation | null>(null)
+  const [designRefactor, setDesignRefactor] = useState<DesignRefactor | null>(null)
   const [evaluatingDesign, setEvaluatingDesign] = useState(false)
+  const [refactoringDesign, setRefactoringDesign] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [timer, setTimer] = useState(0)
+  const [percentile, setPercentile] = useState<number | null>(null)
 
   const selectedDesignQuestion = useMemo(
     () => designQuestions.find((q) => q.id === selectedDesignQuestionId) ?? null,
@@ -48,14 +54,21 @@ export default function DesignWorkspace() {
   useEffect(() => {
     setLoading(true)
     fetchDesignQuestions()
-      .then((systemDesignQuestions) => {
-        setDesignQuestions(systemDesignQuestions)
-        if (systemDesignQuestions.length > 0) {
-          setSelectedDesignQuestionId(systemDesignQuestions[0].id)
+      .then((questions) => {
+        setDesignQuestions(questions)
+        if (questions.length > 0) {
+          setSelectedDesignQuestionId(questions[0].id)
         }
       })
       .catch(() => setError('Failed to load system design questions.'))
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer((p) => p + 1)
+    }, 1000)
+    return () => clearInterval(interval)
   }, [])
 
   const addDesignNode = (type: DiagramNodeType) => {
@@ -88,14 +101,33 @@ export default function DesignWorkspace() {
     if (!selectedDesignQuestion || !architectureText.trim()) return
     setEvaluatingDesign(true)
     try {
-      const { evaluation } = await evaluateSystemDesign({
+      const response = await evaluateSystemDesign({
         questionTitle: selectedDesignQuestion.title,
         architectureText,
-        diagram: { nodes: designNodes, edges: designEdges },
+        timerSeconds: timer,
+        diagram: {
+          nodes: designNodes,
+          edges: designEdges,
+        },
       })
-      setDesignEvaluation(evaluation)
+      setDesignEvaluation(response.evaluation)
+      setPercentile(response.percentile)
     } finally {
       setEvaluatingDesign(false)
+    }
+  }
+
+  const handleDesignRefactor = async () => {
+    if (!selectedDesignQuestion || !architectureText.trim()) return
+    setRefactoringDesign(true)
+    try {
+      const refactor = await fetchDesignRefactor({
+        questionTitle: selectedDesignQuestion.title,
+        architectureText,
+      })
+      setDesignRefactor(refactor)
+    } finally {
+      setRefactoringDesign(false)
     }
   }
 
@@ -130,6 +162,8 @@ export default function DesignWorkspace() {
           <section className="rounded-3xl border border-slate-800 bg-slate-900/50 p-8 backdrop-blur-sm">
             <h2 className="text-2xl font-bold text-white tracking-tight">{selectedDesignQuestion?.title ?? 'Architecture Studio'}</h2>
             <p className="mt-3 text-slate-400 leading-relaxed font-medium">{selectedDesignQuestion?.description ?? 'Select a design challenge to start.'}</p>
+            {loading && <p className="mt-2 text-xs text-emerald-400 animate-pulse">Syncing design catalog...</p>}
+            {error && <p className="mt-2 text-xs text-rose-400">{error}</p>}
           </section>
 
           <DrawboardCanvas nodes={designNodes} edges={designEdges} onMoveNode={moveNode} onEditNodeLabel={editNodeLabel} />
@@ -140,6 +174,11 @@ export default function DesignWorkspace() {
             onEvaluate={handleEvaluateDesign}
             evaluating={evaluatingDesign}
             evaluation={designEvaluation}
+            refactor={designRefactor}
+            onRefactor={handleDesignRefactor}
+            refactoring={refactoringDesign}
+            percentile={percentile}
+            timerSeconds={timer}
             disabled={!selectedDesignQuestion || !architectureText.trim()}
           />
         </div>
