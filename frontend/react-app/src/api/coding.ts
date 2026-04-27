@@ -21,20 +21,13 @@ import type {
   DesignRefactor,
 } from '../types/api'
 
-export async function registerForDemo(): Promise<{ token: string; user: UserProfile }> {
-  const random = Math.floor(Math.random() * 1_000_000)
-  const payload = {
-    name: `Demo User ${random}`,
-    email: `demo${random}@ai-oa.dev`,
-    password: 'DemoPass123!',
-  }
-
+export async function registerUser(payload: any): Promise<{ token: string; user: UserProfile }> {
   const { data } = await api.post<{ token: string; user: UserProfile }>('/auth/register', payload)
   return data
 }
 
-export async function loginDemo(email: string, password: string): Promise<{ token: string; user: UserProfile }> {
-  const { data } = await api.post<{ token: string; user: UserProfile }>('/auth/login', { email, password })
+export async function loginUser(payload: any): Promise<{ token: string; user: UserProfile }> {
+  const { data } = await api.post<{ token: string; user: UserProfile }>('/auth/login', payload)
   return data
 }
 

@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import CodingWorkspace from './pages/CodingWorkspace'
 import DesignWorkspace from './pages/DesignWorkspace'
@@ -16,6 +18,14 @@ function App() {
         <Route 
           path="/" 
           element={!token ? <Landing /> : <Navigate to="/dashboard" replace />} 
+        />
+        <Route 
+          path="/login" 
+          element={!token ? <Login /> : <Navigate to="/dashboard" replace />} 
+        />
+        <Route 
+          path="/register" 
+          element={!token ? <Register /> : <Navigate to="/dashboard" replace />} 
         />
         
         <Route 

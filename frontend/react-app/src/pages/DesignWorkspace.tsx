@@ -18,15 +18,27 @@ import type {
 } from '../types/api'
 
 function createDefaultNode(type: DiagramNodeType, index: number): DiagramNode {
-  const baseLabel = type === 'database' ? 'DB' : type === 'text' ? 'Note' : 'Service'
+  const getLabel = () => {
+    switch(type) {
+      case 'database': return 'Database'
+      case 'cache': return 'Redis/Memcached'
+      case 'load_balancer': return 'Nginx/ALB'
+      case 'queue': return 'Kafka/RabbitMQ'
+      case 'client': return 'Mobile/Web Client'
+      case 'external_api': return 'Stripe/AWS API'
+      case 'cloud_storage': return 'S3 Bucket'
+      case 'text': return 'Note'
+      default: return 'Service'
+    }
+  }
   return {
     id: `node_${Date.now().toString(36)}_${index}`,
     type,
-    x: 40 + (index % 4) * 180,
-    y: 40 + Math.floor(index / 4) * 120,
-    width: type === 'text' ? 180 : 150,
-    height: 70,
-    label: `${baseLabel} ${index + 1}`,
+    x: 40 + (index % 4) * 200,
+    y: 40 + Math.floor(index / 4) * 140,
+    width: type === 'text' ? 180 : 160,
+    height: 80,
+    label: `${getLabel()} ${index + 1}`,
   }
 }
 

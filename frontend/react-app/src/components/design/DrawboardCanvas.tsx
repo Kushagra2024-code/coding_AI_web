@@ -119,31 +119,45 @@ export function DrawboardCanvas({ nodes, edges, onMoveNode, onEditNodeLabel }: D
             })}
           </svg>
 
-          {nodes.map((node) => (
-            <div
-              key={node.id}
-              data-role="node"
-              className="absolute rounded-md border border-cyan-500/60 bg-slate-900/95 shadow-lg"
-              style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
-              onMouseDown={(event) => {
-                setDraggingNodeId(node.id)
-                dragOffset.current = {
-                  x: event.clientX - node.x * zoom - pan.x,
-                  y: event.clientY - node.y * zoom - pan.y,
-                }
-                event.stopPropagation()
-              }}
-            >
-              <div className="flex h-full w-full flex-col">
-                <span className="px-2 pt-1 text-[10px] uppercase tracking-[0.15em] text-cyan-300">{node.type}</span>
-                <input
-                  value={node.label}
-                  onChange={(event) => onEditNodeLabel(node.id, event.target.value)}
-                  className="mx-2 mb-2 mt-1 rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-100 outline-none"
-                />
+          {nodes.map((node) => {
+            const typeColor = 
+              node.type === 'database' ? 'border-emerald-500/60 text-emerald-400' :
+              node.type === 'cache' ? 'border-orange-500/60 text-orange-400' :
+              node.type === 'load_balancer' ? 'border-purple-500/60 text-purple-400' :
+              node.type === 'queue' ? 'border-blue-500/60 text-blue-400' :
+              node.type === 'client' ? 'border-pink-500/60 text-pink-400' :
+              node.type === 'external_api' ? 'border-yellow-500/60 text-yellow-400' :
+              node.type === 'cloud_storage' ? 'border-sky-500/60 text-sky-400' :
+              'border-cyan-500/60 text-cyan-300'
+
+            return (
+              <div
+                key={node.id}
+                data-role="node"
+                className={`absolute rounded-xl border-2 bg-slate-900/95 shadow-2xl transition-shadow hover:shadow-cyan-500/20 ${typeColor}`}
+                style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
+                onMouseDown={(event) => {
+                  setDraggingNodeId(node.id)
+                  dragOffset.current = {
+                    x: event.clientX - node.x * zoom - pan.x,
+                    y: event.clientY - node.y * zoom - pan.y,
+                  }
+                  event.stopPropagation()
+                }}
+              >
+                <div className="flex h-full w-full flex-col">
+                  <span className="px-3 pt-1.5 text-[9px] font-black uppercase tracking-[0.2em] opacity-70">
+                    {node.type.replace('_', ' ')}
+                  </span>
+                  <input
+                    value={node.label}
+                    onChange={(event) => onEditNodeLabel(node.id, event.target.value)}
+                    className="mx-3 mb-3 mt-1.5 rounded-lg border border-slate-700/50 bg-slate-950/40 px-2 py-1.5 text-xs text-slate-100 outline-none transition-colors focus:border-cyan-500/50"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

@@ -12,9 +12,15 @@ export function Toolbox({ onAddNode, onConnectLastTwo, onClear }: ToolboxProps) 
       <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Drawboard Tools</h3>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <ToolButton label="+ Rectangle" onClick={() => onAddNode('rectangle')} />
+        <ToolButton label="+ Service" onClick={() => onAddNode('rectangle')} />
         <ToolButton label="+ Database" onClick={() => onAddNode('database')} />
-        <ToolButton label="+ Text" onClick={() => onAddNode('text')} />
+        <ToolButton label="+ Cache" onClick={() => onAddNode('cache')} />
+        <ToolButton label="+ Load Balancer" onClick={() => onAddNode('load_balancer')} />
+        <ToolButton label="+ Queue" onClick={() => onAddNode('queue')} />
+        <ToolButton label="+ Storage" onClick={() => onAddNode('cloud_storage')} />
+        <ToolButton label="+ External API" onClick={() => onAddNode('external_api')} />
+        <ToolButton label="+ User/Client" onClick={() => onAddNode('client')} />
+        <ToolButton label="+ Note/Text" onClick={() => onAddNode('text')} />
         <ToolButton label="Connect Last Two" onClick={onConnectLastTwo} />
       </div>
 

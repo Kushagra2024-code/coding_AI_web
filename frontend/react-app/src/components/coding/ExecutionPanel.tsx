@@ -86,41 +86,55 @@ export function ExecutionPanel({ result, error, signals, cheatingRisk }: Executi
           <ResultBlock title="Stderr" value={result.execution.stderr || '(empty)'} />
           <ResultBlock title="Compile Output" value={result.execution.compileOutput || '(empty)'} />
 
-          <div className="mt-6 pt-4 border-t border-slate-800">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 text-center">Session Integrity Assessment</h4>
-            <div className="flex items-center justify-center gap-8">
-              <IntegrityMetric 
-                label="Tab Switches" 
-                value={signals?.tabSwitchCount ?? 0}
-                threshold={2}
-              />
-              <IntegrityMetric 
-                label="Pastes" 
-                value={signals?.pasteCount ?? 0}
-                threshold={1}
-              />
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Security Status</span>
-                <span className={`text-lg font-bold ${
-                  cheatingRisk?.severity === 'high' ? 'text-rose-500' : 
-                  cheatingRisk?.severity === 'medium' ? 'text-amber-500' : 'text-emerald-400'
-                }`}>
-                  {cheatingRisk ? cheatingRisk.severity.toUpperCase() : 'CLEAR'}
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Trust Score</span>
-                <span className={`text-lg font-bold ${
-                  (cheatingRisk?.score ?? 0) > 60 ? 'text-rose-500' : 
-                  (cheatingRisk?.score ?? 0) > 30 ? 'text-amber-500' : 'text-emerald-400'
-                }`}>
-                  {cheatingRisk ? `${100 - cheatingRisk.score}%` : '100%'}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       )}
+
+      <div className="mt-6 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className={`h-2 w-2 rounded-full animate-pulse ${
+            cheatingRisk?.severity === 'high' ? 'bg-rose-500' : 
+            cheatingRisk?.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+          }`} />
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Live Integrity Assessment</h4>
+        </div>
+        
+        <div className="flex items-center justify-center gap-6 md:gap-12">
+          <IntegrityMetric 
+            label="Tab Switches" 
+            value={signals?.tabSwitchCount ?? 0}
+            threshold={2}
+          />
+          <IntegrityMetric 
+            label="Pastes" 
+            value={signals?.pasteCount ?? 0}
+            threshold={1}
+          />
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Risk Status</span>
+            <span className={`text-lg font-black tracking-tight ${
+              cheatingRisk?.severity === 'high' ? 'text-rose-500' : 
+              cheatingRisk?.severity === 'medium' ? 'text-amber-500' : 'text-emerald-400'
+            }`}>
+              {cheatingRisk ? cheatingRisk.severity.toUpperCase() : 'SECURE'}
+            </span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Trust</span>
+            <span className={`text-lg font-black tracking-tight ${
+              (cheatingRisk?.score ?? 0) > 60 ? 'text-rose-500' : 
+              (cheatingRisk?.score ?? 0) > 30 ? 'text-amber-500' : 'text-emerald-400'
+            }`}>
+              {cheatingRisk ? `${100 - cheatingRisk.score}%` : '100%'}
+            </span>
+          </div>
+        </div>
+
+        {((signals?.tabSwitchCount ?? 0) >= 2 || (signals?.pasteCount ?? 0) >= 1) && (
+          <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 py-2 animate-bounce">
+            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">⚠️ Integrity Warning: Unusual Activity Detected</span>
+          </div>
+        )}
+      </div>
     </section>
   )
 }

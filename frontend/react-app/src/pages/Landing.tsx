@@ -1,26 +1,7 @@
-import { useState } from 'react'
-import { registerForDemo } from '../api/coding'
-import { useAuthStore } from '../store/authStore'
-import { Terminal, Shield, Cpu, BarChart3, ArrowRight, Play, CheckCircle2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Terminal, Cpu, BarChart3, ArrowRight, Play, CheckCircle2 } from 'lucide-react'
 
 export default function Landing() {
-  const { setAuth } = useAuthStore()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleDemoLogin = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await registerForDemo()
-      setAuth(data.token, data.user)
-    } catch {
-      setError('System connection failed. Please ensure backend is operational.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden selection:bg-emerald-500/30">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,#064e3b,transparent_50%)] pointer-events-none" />
@@ -45,25 +26,21 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 animate-in slide-in-from-bottom duration-1000 delay-200">
-            <button
-              onClick={handleDemoLogin}
-              disabled={loading}
-              className="group flex items-center gap-2 rounded-2xl bg-emerald-500 px-8 py-4 text-lg font-bold text-slate-950 transition-all hover:bg-emerald-400 hover:scale-105 active:scale-95 disabled:opacity-50"
+            <Link
+              to="/register"
+              className="group flex items-center gap-2 rounded-2xl bg-emerald-500 px-8 py-4 text-lg font-bold text-slate-950 transition-all hover:bg-emerald-400 hover:scale-105 active:scale-95"
             >
               <Play className="h-5 w-5 fill-current" />
-              {loading ? 'Initializing...' : 'Get Started for Free'}
+              Get Started for Free
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </button>
-            <a 
-              href="https://github.com" 
-              target="_blank" 
+            </Link>
+            <Link
+              to="/login"
               className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/50 px-8 py-4 text-lg font-bold text-white transition-all hover:bg-slate-800 hover:border-slate-600"
             >
-              Star on GitHub
-            </a>
+              Sign In
+            </Link>
           </div>
-
-          {error && <p className="mb-8 text-rose-400 font-mono text-sm">{error}</p>}
 
           <div className="grid gap-8 md:grid-cols-3 text-left">
             <FeatureCard 

@@ -122,7 +122,7 @@ export interface DesignQuestion {
   focusAreas: string[]
 }
 
-export type DiagramNodeType = 'rectangle' | 'database' | 'text'
+export type DiagramNodeType = 'rectangle' | 'database' | 'text' | 'load_balancer' | 'cache' | 'queue' | 'client' | 'external_api' | 'cloud_storage'
 
 export interface DiagramNode {
   id: string
