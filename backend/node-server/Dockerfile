@@ -16,6 +16,8 @@ FROM node:20-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Copy package files and install production deps only
 COPY package*.json ./
 RUN npm install --production
