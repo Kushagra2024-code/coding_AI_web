@@ -21,9 +21,14 @@ export default function Dashboard() {
   if (loading) return <Layout><div className="flex items-center justify-center min-h-[60vh]"><span className="animate-pulse text-emerald-400 font-mono">Initializing Neural Dashboard...</span></div></Layout>
 
   const chartData = data?.recentActivity.map(item => ({
-    name: new Date(item.timestamp).toLocaleDateString(),
+    name: new Date(item.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
     score: item.score
   })).reverse() ?? []
+
+  // Ensure at least 2 points for the chart to render properly
+  if (chartData.length === 1) {
+    chartData.unshift({ ...chartData[0], score: 0 })
+  }
 
   const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444']
 
@@ -101,7 +106,7 @@ export default function Dashboard() {
 
         {/* Recent Activity Table */}
         <section className="rounded-3xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm overflow-hidden">
-          <h2 className="font-bold text-white mb-4">Recent Sessions</h2>
+          <h2 className="font-bold text-white mb-4">Recent Performance Activity</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>

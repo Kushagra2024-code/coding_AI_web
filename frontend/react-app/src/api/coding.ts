@@ -112,3 +112,13 @@ export async function fetchDesignRefactor(payload: {
   const { data } = await api.post<{ refactor: DesignRefactor }>('/design-refactor', payload)
   return data.refactor
 }
+
+export async function startSession(): Promise<{ sessionId: string }> {
+  const { data } = await api.post<{ sessionId: string }>('/sessions/start')
+  return data
+}
+
+export async function endSession(payload: { sessionId: string }): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>('/sessions/end', payload)
+  return data
+}

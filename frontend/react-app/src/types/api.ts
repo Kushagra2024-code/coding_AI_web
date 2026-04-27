@@ -42,6 +42,8 @@ export interface SubmitCodePayload {
   language: SupportedLanguage
   runOnly?: boolean
   timerSeconds?: number
+  sessionId?: string
+  cheatingSignals?: CheatingSignals
 }
 
 export interface SubmitCodeResponse {
@@ -171,6 +173,7 @@ export interface CheatingSignals {
   tabSwitchCount: number
   windowBlurCount: number
   pasteChars: number
+  pasteCount: number
   solveTimeSeconds?: number
   similarityScore?: number
 }

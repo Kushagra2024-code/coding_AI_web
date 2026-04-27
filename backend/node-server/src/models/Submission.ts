@@ -23,6 +23,17 @@ export interface Submission {
   efficiencyScore: number
   execution: ExecutionResult
   timeTakenSeconds?: number
+  cheatingSignals?: {
+    tabSwitchCount: number
+    windowBlurCount: number
+    pasteChars: number
+    pasteCount: number
+  }
+  cheatingAssessment?: {
+    riskScore: number
+    severity: 'low' | 'medium' | 'high'
+    flags: string[]
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -55,6 +66,17 @@ const submissionSchema = new Schema<Submission, SubmissionModel>(
     efficiencyScore: { type: Number, required: true, min: 0, max: 100 },
     timeTakenSeconds: { type: Number, required: false, min: 0 },
     execution: { type: executionSchema, required: true },
+    cheatingSignals: {
+      tabSwitchCount: { type: Number, default: 0 },
+      windowBlurCount: { type: Number, default: 0 },
+      pasteChars: { type: Number, default: 0 },
+      pasteCount: { type: Number, default: 0 },
+    },
+    cheatingAssessment: {
+      riskScore: { type: Number, default: 0 },
+      severity: { type: String, enum: ['low', 'medium', 'high'], default: 'low' },
+      flags: [{ type: String }],
+    },
   },
   { timestamps: true },
 )

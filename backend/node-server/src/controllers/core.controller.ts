@@ -16,6 +16,7 @@ const detectCheatingSchema = z.object({
     tabSwitchCount: z.number().int().min(0).default(0),
     windowBlurCount: z.number().int().min(0).default(0),
     pasteChars: z.number().int().min(0).default(0),
+    pasteCount: z.number().int().min(0).default(0),
     solveTimeSeconds: z.number().int().min(0).optional(),
     similarityScore: z.number().min(0).max(100).optional(),
   }),
@@ -189,7 +190,16 @@ export async function getAnalytics(req: Request, res: Response): Promise<void> {
     // 1. Core aggregates
     const totalSessions = await SessionEntity.countDocuments({ userId: req.user.id })
     const totalSubmissions = await SubmissionEntity.countDocuments({ userId: req.user.id })
-    const avgOverallScore = average(sessions.map((s) => s.overallScore ?? 0))
+    
+    // For sessions without overallScore, we use the average correctness of submissions in that session
+    const sessionScores = await Promise.all(sessions.map(async (s) => {
+      if (s.overallScore) return s.overallScore
+      const sessionSubmissions = await SubmissionEntity.find({ sessionId: s._id })
+      if (sessionSubmissions.length === 0) return 0
+      return average(sessionSubmissions.map(sub => sub.correctnessScore))
+    }))
+    
+    const avgOverallScore = average(sessionScores)
 
     // 2. Topic level strengths (aggregate by tags)
     const topicMap: Record<string, { total: number; correctness: number; efficiency: number; count: number }> = {}
@@ -213,7 +223,7 @@ export async function getAnalytics(req: Request, res: Response): Promise<void> {
       averageCorrectness: Math.round(stats.correctness / stats.count),
       averageEfficiency: Math.round(stats.efficiency / stats.count),
       count: stats.count,
-    }))
+    })).filter(t => t.count > 0)
 
     // 3. Activity trends (last 7 days - simplified)
     const recentActivity = [

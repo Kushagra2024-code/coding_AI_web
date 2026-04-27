@@ -7,10 +7,15 @@ interface ExecutionPanelProps {
     tabSwitchCount: number
     windowBlurCount: number
     pasteChars: number
+    pasteCount: number
   }
+  cheatingRisk?: {
+    score: number
+    severity: string
+  } | null
 }
 
-export function ExecutionPanel({ result, error, signals }: ExecutionPanelProps) {
+export function ExecutionPanel({ result, error, signals, cheatingRisk }: ExecutionPanelProps) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
       <div className="flex items-center justify-between">
@@ -87,16 +92,30 @@ export function ExecutionPanel({ result, error, signals }: ExecutionPanelProps) 
               <IntegrityMetric 
                 label="Tab Switches" 
                 value={signals?.tabSwitchCount ?? 0}
-                threshold={3}
+                threshold={2}
               />
               <IntegrityMetric 
-                label="Copy/Paste" 
-                value={signals?.pasteChars ?? 0}
-                threshold={300}
+                label="Pastes" 
+                value={signals?.pasteCount ?? 0}
+                threshold={1}
               />
               <div className="flex flex-col items-center">
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Security Status</span>
+                <span className={`text-lg font-bold ${
+                  cheatingRisk?.severity === 'high' ? 'text-rose-500' : 
+                  cheatingRisk?.severity === 'medium' ? 'text-amber-500' : 'text-emerald-400'
+                }`}>
+                  {cheatingRisk ? cheatingRisk.severity.toUpperCase() : 'CLEAR'}
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter mb-1">Trust Score</span>
-                <span className="text-lg font-bold text-emerald-400">98%</span>
+                <span className={`text-lg font-bold ${
+                  (cheatingRisk?.score ?? 0) > 60 ? 'text-rose-500' : 
+                  (cheatingRisk?.score ?? 0) > 30 ? 'text-amber-500' : 'text-emerald-400'
+                }`}>
+                  {cheatingRisk ? `${100 - cheatingRisk.score}%` : '100%'}
+                </span>
               </div>
             </div>
           </div>

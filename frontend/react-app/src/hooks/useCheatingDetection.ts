@@ -5,6 +5,7 @@ export function useCheatingDetection() {
   const [tabSwitchCount, setTabSwitchCount] = useState(0)
   const [windowBlurCount, setWindowBlurCount] = useState(0)
   const [pasteChars, setPasteChars] = useState(0)
+  const [pasteCount, setPasteCount] = useState(0)
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -20,6 +21,7 @@ export function useCheatingDetection() {
     const handlePaste = (e: ClipboardEvent) => {
       const pastedText = e.clipboardData?.getData('text') || ''
       setPasteChars((prev) => prev + pastedText.length)
+      setPasteCount((prev) => prev + 1)
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -38,17 +40,19 @@ export function useCheatingDetection() {
       tabSwitchCount,
       windowBlurCount,
       pasteChars,
+      pasteCount,
     }
-  }, [tabSwitchCount, windowBlurCount, pasteChars])
+  }, [tabSwitchCount, windowBlurCount, pasteChars, pasteCount])
 
   const resetSignals = useCallback(() => {
     setTabSwitchCount(0)
     setWindowBlurCount(0)
     setPasteChars(0)
+    setPasteCount(0)
   }, [])
 
   return {
-    signals: { tabSwitchCount, windowBlurCount, pasteChars },
+    signals: { tabSwitchCount, windowBlurCount, pasteChars, pasteCount },
     getSignals,
     resetSignals,
   }

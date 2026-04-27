@@ -8,6 +8,8 @@ import {
   runCode,
   detectCheating,
   fetchCodeRefactor,
+  startSession,
+  endSession,
 } from '../api/coding'
 import { useCheatingDetection } from '../hooks/useCheatingDetection'
 import { EditorPanel } from '../components/coding/EditorPanel'
@@ -59,6 +61,8 @@ export default function CodingWorkspace() {
   const [generatingQuestion, setGeneratingQuestion] = useState(false)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [cheatingRisk, setCheatingRisk] = useState<{ score: number; severity: string } | null>(null)
 
   const { signals, getSignals, resetSignals } = useCheatingDetection()
 
@@ -99,8 +103,36 @@ export default function CodingWorkspace() {
     const interval = setInterval(() => {
       setTimer((prev) => prev + 1)
     }, 1000)
-    return () => clearInterval(interval)
+    
+    // Initialize session
+    startSession().then((res) => setSessionId(res.sessionId))
+
+    return () => {
+      clearInterval(interval)
+      if (sessionId) {
+        endSession({ sessionId }).catch(console.error)
+      }
+    }
   }, [])
+
+  // Periodic cheating reporting (every 30s)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const currentSignals = getSignals()
+      if (currentSignals.tabSwitchCount > 0 || currentSignals.pasteCount > 0) {
+        try {
+          const res = await detectCheating({
+            sessionId: sessionId || undefined,
+            signals: currentSignals
+          })
+          setCheatingRisk({ score: res.riskScore, severity: res.severity })
+        } catch (err) {
+          console.error('Failed to report cheating signals', err)
+        }
+      }
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [sessionId, getSignals])
 
   const handleLanguageChange = (next: SupportedLanguage) => {
     setLanguage(next)
@@ -116,7 +148,8 @@ export default function CodingWorkspace() {
         questionId: selectedQuestion.id, 
         language, 
         code, 
-        runOnly: true 
+        runOnly: true,
+        sessionId: sessionId || undefined
       })
       setResult(response)
       setFeedback(null)
@@ -132,22 +165,20 @@ export default function CodingWorkspace() {
     setRunning(true)
     setError(null)
     try {
+      const currentSignals = getSignals()
       const response = await runCode({ 
         questionId: selectedQuestion.id, 
         language, 
         code, 
         runOnly: false,
-        timerSeconds: timer
+        timerSeconds: timer,
+        sessionId: sessionId || undefined,
+        cheatingSignals: { ...currentSignals, similarityScore: 0 } // Default similarityScore for now
       })
       setResult(response)
       setFeedback(null)
       alert(`Submission successful! Score: ${response.correctnessScore}%`)
       
-      // Cheating detection report
-      const signals = getSignals()
-      await detectCheating({ 
-        signals: { ...signals, solveTimeSeconds: timer } 
-      })
       resetSignals()
     } catch {
       setError('Code submission failed.')
@@ -253,7 +284,12 @@ export default function CodingWorkspace() {
             running={running}
             timerSeconds={timer}
           />
-          <ExecutionPanel result={result} error={error} signals={signals} />
+          <ExecutionPanel 
+            result={result} 
+            error={error} 
+            signals={signals} 
+            cheatingRisk={cheatingRisk}
+          />
           <FeedbackPanel
             feedback={feedback}
             loading={feedbackLoading}

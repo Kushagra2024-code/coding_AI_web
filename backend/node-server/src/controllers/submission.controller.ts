@@ -5,6 +5,7 @@ import { isDatabaseReady } from '../config/db'
 import { SubmissionEntity } from '../models/Submission'
 import { getQuestionWithHiddenTests } from '../services/question.service'
 import { executeWithJudge0, type JudgeResult, type SupportedLanguage } from '../services/compiler/judge0.service'
+import { assessCheatingRisk } from '../services/cheating/cheating.service'
 
 const submitCodeSchema = z.object({
   questionId: z.string().min(3),
@@ -13,6 +14,13 @@ const submitCodeSchema = z.object({
   language: z.enum(['cpp', 'python', 'java', 'javascript']),
   runOnly: z.boolean().optional(),
   timerSeconds: z.number().optional(),
+  cheatingSignals: z.object({
+    tabSwitchCount: z.number().default(0),
+    windowBlurCount: z.number().default(0),
+    pasteChars: z.number().default(0),
+    pasteCount: z.number().default(0),
+    similarityScore: z.number().optional(),
+  }).optional(),
 })
 
 function normalize(text: string): string {
@@ -127,6 +135,11 @@ export async function submitCode(req: Request, res: Response): Promise<void> {
         timeMs: averageTime,
         memoryKb: finalExecution.memoryKb,
       },
+      cheatingSignals: payload.cheatingSignals,
+      cheatingAssessment: payload.cheatingSignals ? assessCheatingRisk({
+        ...payload.cheatingSignals,
+        solveTimeSeconds: payload.timerSeconds
+      }) : undefined,
     })
   }
 
