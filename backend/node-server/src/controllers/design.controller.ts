@@ -15,7 +15,7 @@ const evaluateDesignSchema = z.object({
     nodes: z.array(
       z.object({
         id: z.string(),
-        type: z.enum(['rectangle', 'database', 'text']),
+        type: z.string(),
         x: z.number(),
         y: z.number(),
         width: z.number(),

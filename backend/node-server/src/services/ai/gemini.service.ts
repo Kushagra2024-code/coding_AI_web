@@ -263,7 +263,7 @@ export async function evaluateSystemDesignWithAi(params: {
   questionTitle: string
   architectureText: string
   diagram: {
-    nodes: Array<{ id: string; type: 'rectangle' | 'database' | 'text'; label: string }>
+    nodes: Array<{ id: string; type: string; label: string }>
     edges: Array<{ id: string; from: string; to: string; label?: string }>
   }
 }): Promise<DesignEvaluation> {
@@ -285,7 +285,7 @@ export async function evaluateSystemDesignWithAi(params: {
     }
   }
 
-  const prompt = `You are a principal system design interviewer.
+  const prompt = `You are a Principal Software Architect conducting a System Design Interview.
 Return only valid JSON with this exact shape:
 {
   "score": number,
@@ -300,17 +300,21 @@ Return only valid JSON with this exact shape:
 }
 
 Question: ${params.questionTitle}
+
 Architecture Notes:
 ${params.architectureText}
 
-Diagram nodes: ${params.diagram.nodes.map((n) => `${n.type}:${n.label}`).join(', ')}
-Diagram edges: ${params.diagram.edges.map((e) => `${e.from}->${e.to}${e.label ? `(${e.label})` : ''}`).join(', ')}
+Diagram Analysis:
+- Components: ${params.diagram.nodes.map((n) => `[${n.type.toUpperCase()}] ${n.label}`).join(', ')}
+- Connections: ${params.diagram.edges.map((e) => `${e.from} (source) -> ${e.to} (target) ${e.label ? `[Label: ${e.label}]` : ''}`).join(', ')}
 
-Rules:
-- All numeric scores must be integers in range [0,100].
-- Provide 2-6 missing components.
-- Provide 3-6 actionable improvements.
-- No markdown and no text outside JSON.`
+Evaluation Rules:
+1. All scores (0-100) must reflect industry standards for a senior candidate.
+2. Consider modern infrastructure: Load Balancers (availability), Caches (latency), Message Queues (decoupling/async), Cloud Storage (durability), and External APIs (integration).
+3. Identify missed optimization opportunities like CDN, rate limiting, monitoring, or specific database patterns (Sharding, Read Replicas).
+4. Provide 3-6 highly actionable, specific technical improvements.
+5. Provide a summary that highlights both strengths and critical technical gaps.
+6. NO markdown, NO formatting outside the JSON object.`
 
   try {
     return await generateJson<DesignEvaluation>(prompt)

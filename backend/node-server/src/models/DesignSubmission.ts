@@ -2,7 +2,7 @@ import mongoose, { HydratedDocument, Model, Schema, Types } from 'mongoose'
 
 export interface DiagramNode {
   id: string
-  type: 'rectangle' | 'database' | 'text'
+  type: string
   x: number
   y: number
   width: number
@@ -50,7 +50,7 @@ export type DesignSubmissionModel = Model<DesignSubmission>
 const nodeSchema = new Schema<DiagramNode>(
   {
     id: { type: String, required: true },
-    type: { type: String, enum: ['rectangle', 'database', 'text'], required: true },
+    type: { type: String, required: true },
     x: { type: Number, required: true },
     y: { type: Number, required: true },
     width: { type: Number, required: true },
